@@ -13,7 +13,7 @@ export async function uploadToBlob(
 ) {
   try {
     const blob = await put(path, file, {
-      access: options?.access || 'public',
+      access: (options?.access || 'public') as 'public',
       addRandomSuffix: false,
       contentType: options?.contentType,
     })

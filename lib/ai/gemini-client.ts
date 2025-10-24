@@ -198,7 +198,7 @@ export class GeminiClient {
 
     // Track usage for streaming
     const finalResponse = await result.response
-    this.trackUsage(finalResponse)
+    this.trackUsage({ response: finalResponse } as GenerateContentResult)
   }
 
   /**
@@ -371,7 +371,9 @@ export class GeminiClient {
     // Simple cache size management
     if (cache.size > 100) {
       const firstKey = cache.keys().next().value
-      cache.delete(firstKey)
+      if (firstKey) {
+        cache.delete(firstKey)
+      }
     }
   }
 

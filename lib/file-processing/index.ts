@@ -1,4 +1,4 @@
-import pdfParse from 'pdf-parse'
+import * as pdfParse from 'pdf-parse'
 import mammoth from 'mammoth'
 import * as XLSX from 'xlsx'
 import sharp from 'sharp'
@@ -9,7 +9,8 @@ import { getGeminiModel } from '@/lib/gemini/client'
  */
 export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   try {
-    const data = await pdfParse(buffer)
+    // @ts-ignore - pdf-parse has ESM export issues
+    const data = await (pdfParse.default || pdfParse)(buffer)
     return data.text
   } catch (error) {
     console.error('PDF extraction error:', error)
