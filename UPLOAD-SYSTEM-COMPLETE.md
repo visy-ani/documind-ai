@@ -247,7 +247,7 @@ pnpm db:studio
 
 ```bash
 # Database
-DATABASE_URL="postgres://..."
+POSTGRES_URL="postgres://..."
 
 # Supabase Auth
 NEXT_PUBLIC_SUPABASE_URL="https://..."

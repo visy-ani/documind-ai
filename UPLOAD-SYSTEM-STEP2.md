@@ -462,7 +462,7 @@ The next step will add file processing to extract text and metadata from the upl
 **Required Environment Variables:**
 ```bash
 # Already configured:
-DATABASE_URL="..."
+POSTGRES_URL="..."
 NEXT_PUBLIC_SUPABASE_URL="..."
 NEXT_PUBLIC_SUPABASE_ANON_KEY="..."
 GEMINI_API_KEY="..."
