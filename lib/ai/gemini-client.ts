@@ -75,7 +75,7 @@ export class GeminiClient {
       const cached = this.getFromCache(cacheKey)
       if (cached) {
         console.log('Returning cached response')
-        return cached
+        return cached as GenerateContentResult
       }
     }
 
@@ -219,11 +219,12 @@ export class GeminiClient {
   /**
    * Check if error is retryable
    */
-  private isRetryable(error: any): boolean {
+  private isRetryable(error: unknown): boolean {
     if (error instanceof RateLimitError) return true
     
-    const message = error?.message?.toLowerCase() || ''
-    const status = error?.status || error?.statusCode
+    const errorObj = error as { message?: string; status?: number; statusCode?: number }
+    const message = errorObj?.message?.toLowerCase() || ''
+    const status = errorObj?.status || errorObj?.statusCode
     
     // Retry on rate limits, timeouts, and server errors
     if (status === 429 || status === 503 || status === 500) return true
@@ -237,17 +238,18 @@ export class GeminiClient {
   /**
    * Handle and transform errors
    */
-  private handleError(error: any): AIError {
+  private handleError(error: unknown): AIError {
     if (error instanceof AIError) {
       return error
     }
 
-    const message = error?.message || 'Unknown error occurred'
-    const status = error?.status || error?.statusCode
+    const errorObj = error as { message?: string; status?: number; statusCode?: number; retryAfter?: number }
+    const message = errorObj?.message || 'Unknown error occurred'
+    const status = errorObj?.status || errorObj?.statusCode
 
     // Rate limit errors
     if (status === 429 || message.toLowerCase().includes('rate limit')) {
-      const retryAfter = error?.retryAfter || 60
+      const retryAfter = errorObj?.retryAfter || 60
       return new RateLimitError(
         'API rate limit exceeded. Please try again later.',
         retryAfter
@@ -304,7 +306,7 @@ export class GeminiClient {
   private trackUsage(result: GenerateContentResult) {
     try {
       const response = result.response
-      const usageMetadata = (response as any).usageMetadata
+      const usageMetadata = (response as { usageMetadata?: { totalTokenCount?: number } }).usageMetadata
       
       if (usageMetadata) {
         usageStats.totalRequests++
@@ -340,12 +342,12 @@ export class GeminiClient {
   /**
    * Cache management
    */
-  private getCacheKey(prompt: string, options?: any): string {
+  private getCacheKey(prompt: string, options?: Record<string, unknown>): string {
     const optionsStr = JSON.stringify(options || {})
     return `${prompt}-${optionsStr}`
   }
 
-  private getFromCache(key: string): any {
+  private getFromCache(key: string): unknown {
     const entry = cache.get(key)
     if (!entry) return null
 
@@ -359,7 +361,7 @@ export class GeminiClient {
     return entry.value
   }
 
-  private setCache(key: string, value: any) {
+  private setCache(key: string, value: unknown) {
     cache.set(key, {
       key,
       value,

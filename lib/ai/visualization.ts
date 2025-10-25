@@ -1,4 +1,3 @@
-import { geminiClient } from './gemini-client'
 import sharp from 'sharp'
 import {
   VisualizationRequest,
@@ -81,7 +80,7 @@ async function generateChart(request: VisualizationRequest): Promise<Visualizati
  * Generate bar chart SVG
  */
 function generateBarChartSVG(
-  data: any,
+  data: Record<string, unknown> | Array<{ label: string; value: unknown }>,
   options: { style: string; colors: string[] }
 ): string {
   const width = 800
@@ -92,11 +91,11 @@ function generateBarChartSVG(
 
   // Extract data
   const items = Array.isArray(data) ? data : Object.entries(data).map(([key, value]) => ({ label: key, value }))
-  const maxValue = Math.max(...items.map((item: any) => Number(item.value) || 0))
+  const maxValue = Math.max(...items.map((item) => Number(item.value) || 0))
   const barWidth = chartWidth / items.length * 0.8
 
   // Generate bars
-  const bars = items.map((item: any, index: number) => {
+  const bars = items.map((item, index: number) => {
     const value = Number(item.value) || 0
     const barHeight = (value / maxValue) * chartHeight
     const x = padding + (index * chartWidth / items.length) + (chartWidth / items.length - barWidth) / 2
@@ -139,7 +138,7 @@ function generateBarChartSVG(
  * Generate line chart SVG
  */
 function generateLineChartSVG(
-  data: any,
+  data: Record<string, unknown> | Array<{ label: string; value: unknown }>,
   options: { style: string; colors: string[] }
 ): string {
   const width = 800
@@ -149,10 +148,10 @@ function generateLineChartSVG(
   const chartHeight = height - 2 * padding
 
   const items = Array.isArray(data) ? data : Object.entries(data).map(([key, value]) => ({ label: key, value }))
-  const maxValue = Math.max(...items.map((item: any) => Number(item.value) || 0))
+  const maxValue = Math.max(...items.map((item) => Number(item.value) || 0))
 
   // Generate points
-  const points = items.map((item: any, index: number) => {
+  const points = items.map((item, index: number) => {
     const value = Number(item.value) || 0
     const x = padding + (index / (items.length - 1)) * chartWidth
     const y = height - padding - (value / maxValue) * chartHeight
@@ -171,7 +170,7 @@ function generateLineChartSVG(
       <polyline points="${points}" fill="none" stroke="${options.colors[0]}" stroke-width="3"/>
       
       <!-- Points -->
-      ${items.map((item: any, index: number) => {
+      ${items.map((item, index: number) => {
         const value = Number(item.value) || 0
         const x = padding + (index / (items.length - 1)) * chartWidth
         const y = height - padding - (value / maxValue) * chartHeight
@@ -190,7 +189,7 @@ function generateLineChartSVG(
  * Generate pie chart SVG
  */
 function generatePieChartSVG(
-  data: any,
+  data: Record<string, unknown> | Array<{ label: string; value: unknown }>,
   options: { style: string; colors: string[] }
 ): string {
   const width = 800
@@ -200,11 +199,11 @@ function generatePieChartSVG(
   const radius = Math.min(width, height) / 3
 
   const items = Array.isArray(data) ? data : Object.entries(data).map(([key, value]) => ({ label: key, value }))
-  const total = items.reduce((sum: number, item: any) => sum + (Number(item.value) || 0), 0)
+  const total = items.reduce((sum: number, item) => sum + (Number(item.value) || 0), 0)
 
   let currentAngle = -90 // Start at top
 
-  const slices = items.map((item: any, index: number) => {
+  const slices = items.map((item, index: number) => {
     const value = Number(item.value) || 0
     const angle = (value / total) * 360
     const startAngle = currentAngle
@@ -246,7 +245,8 @@ function generatePieChartSVG(
 /**
  * Generate infographic using Gemini
  */
-async function generateInfographic(request: VisualizationRequest): Promise<VisualizationResult> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function generateInfographic(_request: VisualizationRequest): Promise<VisualizationResult> {
   // For infographics, we'll create a descriptive SVG
   // In production, you might use Gemini's image generation capabilities
   const svg = `
@@ -282,7 +282,8 @@ async function generateInfographic(request: VisualizationRequest): Promise<Visua
 /**
  * Generate diagram
  */
-async function generateDiagram(request: VisualizationRequest): Promise<VisualizationResult> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function generateDiagram(_request: VisualizationRequest): Promise<VisualizationResult> {
   const svg = `
     <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
       <rect width="800" height="600" fill="#ffffff"/>

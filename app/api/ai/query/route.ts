@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     // 3. VALIDATE REQUEST BODY
     // ============================================================
     const body = await request.json()
-    const { documentId, query, conversationId } = body
+    const { documentId, query } = body
 
     if (!documentId || typeof documentId !== 'string') {
       return NextResponse.json(
@@ -184,6 +184,7 @@ export async function POST(request: NextRequest) {
     // ============================================================
     const encoder = new TextEncoder()
     let fullResponse = ''
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let queryId: string | undefined
 
     const customReadable = new ReadableStream({
@@ -227,7 +228,7 @@ export async function POST(request: NextRequest) {
           const savedQuery = await prisma.aIQuery.create({
             data: {
               documentId,
-              userId,
+              userId: userId!,
               query: query.trim(),
               response: fullResponse,
               model: 'gemini-2.0-flash-exp',

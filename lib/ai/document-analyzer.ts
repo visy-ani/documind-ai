@@ -92,7 +92,7 @@ Please provide a comprehensive, accurate answer based solely on the document con
     const responseText = response.text()
 
     // Try to parse structured data if requested
-    let structuredData: Record<string, any> | undefined
+    let structuredData: Record<string, unknown> | undefined
     let parsedResponse = responseText
     let confidence: number | undefined
     let sources: Array<{ text: string; relevance: number }> | undefined
@@ -111,14 +111,14 @@ Please provide a comprehensive, accurate answer based solely on the document con
           const confMap = { high: 0.9, medium: 0.7, low: 0.5 }
           confidence = confMap[parsed.confidence as keyof typeof confMap] || 0.7
         }
-      } catch (e) {
+      } catch {
         // If parsing fails, just use the full response
         console.log('Could not parse structured data, using full response')
       }
     }
 
     // Get token usage from response metadata
-    const usageMetadata = (response as any).usageMetadata
+    const usageMetadata = (response as { usageMetadata?: { totalTokenCount?: number } }).usageMetadata
     const tokensUsed = usageMetadata?.totalTokenCount || totalTokens
 
     const processingTime = Date.now() - startTime
@@ -321,7 +321,7 @@ Please structure your response as JSON:
           keyInsights = parsed.keyInsights
           actionItems = parsed.actionItems
         }
-      } catch (e) {
+      } catch {
         console.log('Could not parse structured summary, using full response')
       }
     }

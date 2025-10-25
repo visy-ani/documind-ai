@@ -5,7 +5,6 @@ import {
   ConversationContext,
   AIError,
 } from '@/types/ai'
-import { v4 as uuidv4 } from 'uuid'
 
 // Context window limit for Gemini 2.0 Flash (conservative estimate)
 const MAX_CONTEXT_TOKENS = 900000 // Leave room for response

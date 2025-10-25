@@ -319,12 +319,12 @@ export async function GET(request: NextRequest) {
     // Find latest comparison query
     const latestComparison = await prisma.aIQuery.findFirst({
       where: {
-        documentId: documentId1,
-        userId: user.id,
-        query: {
-          contains: 'Compare documents',
-          contains: document2.name,
-        },
+        AND: [
+          { documentId: documentId1 },
+          { userId: user.id },
+          { query: { contains: 'Compare documents' } },
+          { query: { contains: document2.name } },
+        ],
       },
       orderBy: {
         createdAt: 'desc',

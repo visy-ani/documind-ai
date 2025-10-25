@@ -29,12 +29,23 @@ import { EntitiesDisplay } from '@/components/ai/entities-display'
 // Create query client
 const queryClient = new QueryClient()
 
+interface DocumentData {
+  id: string
+  name: string
+  type: string
+  storageUrl: string
+  extractedText: string | null
+  metadata: Record<string, unknown>
+  createdAt: Date
+  updatedAt: Date
+}
+
 export default function DocumentDetailPage() {
   const params = useParams()
   const router = useRouter()
   const documentId = params.id as string
   
-  const [document, setDocument] = useState<any>(null)
+  const [document, setDocument] = useState<DocumentData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -79,8 +90,8 @@ export default function DocumentDetailPage() {
     return null
   }
 
-  const metadata = document.metadata || {}
-  const fileSize = metadata.size || 0
+  const metadata = (document.metadata || {}) as Record<string, unknown>
+  const fileSize = (metadata.size as number) || 0
   const isProcessed = !!document.extractedText
 
   return (
@@ -186,19 +197,19 @@ export default function DocumentDetailPage() {
                     <span className="text-sm text-muted-foreground">Type:</span>
                     <p className="font-medium text-sm">{document.type.toUpperCase()}</p>
                   </div>
-                  {metadata.wordCount && (
+                  {typeof metadata.wordCount === 'number' && (
                     <div>
                       <span className="text-sm text-muted-foreground">Word Count:</span>
                       <p className="font-medium text-sm">{metadata.wordCount.toLocaleString()}</p>
                     </div>
                   )}
-                  {metadata.pageCount && (
+                  {typeof metadata.pageCount === 'number' && (
                     <div>
                       <span className="text-sm text-muted-foreground">Pages:</span>
                       <p className="font-medium text-sm">{metadata.pageCount}</p>
                     </div>
                   )}
-                  {metadata.sheetCount && (
+                  {typeof metadata.sheetCount === 'number' && (
                     <div>
                       <span className="text-sm text-muted-foreground">Sheets:</span>
                       <p className="font-medium text-sm">{metadata.sheetCount}</p>

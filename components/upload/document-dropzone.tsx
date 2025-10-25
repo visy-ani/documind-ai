@@ -333,6 +333,7 @@ function FileItem({ fileState, onRemove }: FileItemProps) {
         {/* Preview or Icon */}
         <div className="flex-shrink-0">
           {file.preview ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={file.preview}
               alt={file.name}

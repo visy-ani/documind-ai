@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import ReactMarkdown from 'react-markdown'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { 
   Send, 
   Copy, 
@@ -15,7 +13,6 @@ import {
   Search,
   Loader2,
   Check,
-  AlertCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -436,19 +433,37 @@ function MessageBubble({ message, onCopy, isCopied, isStreaming }: MessageBubble
             <div className="prose prose-sm dark:prose-invert max-w-none">
               <ReactMarkdown
                 components={{
-                  code({ node, inline, className, children, ...props }: any) {
+                  code({ inline, className, children, ...props }: { inline?: boolean; className?: string; children?: React.ReactNode }) {
                     const match = /language-(\w+)/.exec(className || '')
-                    return !inline && match ? (
-                      <SyntaxHighlighter
-                        style={oneDark}
-                        language={match[1]}
-                        PreTag="div"
-                        {...props}
-                      >
-                        {String(children).replace(/\n$/, '')}
-                      </SyntaxHighlighter>
+                    const language = match ? match[1] : ''
+                    
+                    return !inline ? (
+                      <div className="relative group">
+                        <div className="flex items-center justify-between px-4 py-2 bg-gray-800 dark:bg-gray-900 rounded-t-lg border-b border-gray-700">
+                          <span className="text-xs text-gray-400 font-mono">
+                            {language || 'code'}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => {
+                              navigator.clipboard.writeText(String(children))
+                              toast.success('Code copied!')
+                            }}
+                          >
+                            <Copy className="h-3 w-3 mr-1" />
+                            Copy
+                          </Button>
+                        </div>
+                        <pre className="bg-gray-900 dark:bg-black rounded-b-lg p-4 overflow-x-auto">
+                          <code className={cn("text-sm font-mono text-gray-100", className)} {...props}>
+                            {children}
+                          </code>
+                        </pre>
+                      </div>
                     ) : (
-                      <code className={className} {...props}>
+                      <code className={cn("px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-sm font-mono", className)} {...props}>
                         {children}
                       </code>
                     )
@@ -472,7 +487,7 @@ function MessageBubble({ message, onCopy, isCopied, isStreaming }: MessageBubble
             isUser ? 'flex-row-reverse' : 'flex-row'
           )}
         >
-          <span>{message.timestamp.toLocaleTimeString()}</span>
+          <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
           
           {!isUser && onCopy && (
             <Button

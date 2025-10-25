@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma/client'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
 import { deleteFromBlob } from '@/lib/storage/blob'
 import { processDocument } from '@/lib/file-processing'
 
@@ -18,9 +18,10 @@ type ActionResponse<T = void> = {
  */
 export async function processDocumentContent(
   documentId: string
-): Promise<ActionResponse<{ extractedText: string; metadata: any }>> {
+): Promise<ActionResponse<{ extractedText: string; metadata: Record<string, unknown> }>> {
   try {
     // Get current user
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
@@ -69,12 +70,12 @@ export async function processDocumentContent(
     )
 
     // Update document with extracted text
-    const updatedDocument = await prisma.document.update({
+    await prisma.document.update({
       where: { id: documentId },
       data: {
         extractedText: text,
         metadata: {
-          ...(document.metadata as any),
+          ...(document.metadata as Record<string, unknown>),
           ...processingMetadata,
           processedAt: new Date().toISOString(),
         },
@@ -108,6 +109,7 @@ export async function deleteDocument(
 ): Promise<ActionResponse> {
   try {
     // Get current user
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
@@ -186,12 +188,13 @@ export async function getDocument(documentId: string): Promise<ActionResponse<{
   type: string
   storageUrl: string
   extractedText: string | null
-  metadata: any
+  metadata: Record<string, unknown>
   createdAt: Date
   updatedAt: Date
 }>> {
   try {
     // Get current user
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
@@ -236,7 +239,7 @@ export async function getDocument(documentId: string): Promise<ActionResponse<{
         type: document.type,
         storageUrl: document.storageUrl,
         extractedText: document.extractedText,
-        metadata: document.metadata,
+        metadata: (document.metadata as Record<string, unknown>) || {},
         createdAt: document.createdAt,
         updatedAt: document.updatedAt,
       },
@@ -263,6 +266,7 @@ export async function listDocuments(workspaceId: string): Promise<ActionResponse
 }>>> {
   try {
     // Get current user
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
@@ -307,7 +311,7 @@ export async function listDocuments(workspaceId: string): Promise<ActionResponse
         id: doc.id,
         name: doc.name,
         type: doc.type,
-        size: (doc.metadata as any)?.size || 0,
+        size: (doc.metadata as Record<string, unknown>)?.size as number || 0,
         hasExtractedText: !!doc.extractedText,
         createdAt: doc.createdAt,
       })),
@@ -333,6 +337,7 @@ export async function updateDocument(
 ): Promise<ActionResponse> {
   try {
     // Get current user
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {

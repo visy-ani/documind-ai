@@ -20,7 +20,7 @@ interface Document {
 }
 
 export default function DocumentsPage() {
-  const { user, isLoading: authLoading } = useAuth()
+  const { isLoading: authLoading } = useAuth()
   const [documents, setDocuments] = useState<Document[]>([])
   const [workspaceId, setWorkspaceId] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)

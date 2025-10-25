@@ -1,5 +1,3 @@
-import { z } from 'zod'
-
 // File type validation
 export const ACCEPTED_FILE_TYPES = {
   'application/pdf': ['.pdf'],

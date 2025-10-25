@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { 
   FileText, 
@@ -49,7 +49,7 @@ export function DocumentSummaryCard({
   const queryClient = useQueryClient()
 
   // Fetch existing summary
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['document-summary', documentId],
     queryFn: async () => {
       const response = await fetch(`/api/ai/summary?documentId=${documentId}`)
@@ -90,11 +90,11 @@ export function DocumentSummaryCard({
   })
 
   // Auto-generate on mount if requested and no summary exists
-  useState(() => {
+  useEffect(() => {
     if (autoGenerate && data && !data.hasSummary && !generateMutation.isPending) {
-      generateMutation.mutate()
+      generateMutation.mutate(undefined)
     }
-  })
+  }, [autoGenerate, data, generateMutation])
 
   // Copy summary
   const copySummary = () => {
@@ -167,7 +167,7 @@ Model: ${data.summary.metadata?.model || 'AI'}
             <p className="text-sm text-muted-foreground">
               No summary generated yet. Generate one to get quick insights about this document.
             </p>
-            <Button onClick={() => generateMutation.mutate()}>
+            <Button onClick={() => generateMutation.mutate(undefined)}>
               <Sparkles className="w-4 h-4" />
               Generate Summary
             </Button>
@@ -207,7 +207,7 @@ Model: ${data.summary.metadata?.model || 'AI'}
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={() => generateMutation.mutate()}
+              onClick={() => generateMutation.mutate(undefined)}
               title="Regenerate summary"
             >
               <RefreshCw className="w-4 h-4" />

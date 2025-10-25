@@ -1,20 +1,50 @@
-import * as pdfParse from 'pdf-parse'
 import mammoth from 'mammoth'
 import * as XLSX from 'xlsx'
 import sharp from 'sharp'
 import { getGeminiModel } from '@/lib/gemini/client'
 
 /**
- * Extract text from PDF file
+ * Extract text from PDF file using Gemini Vision API
+ * This is more reliable than pdf-parse in Next.js environments
  */
 export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   try {
-    // @ts-ignore - pdf-parse has ESM export issues
-    const data = await (pdfParse.default || pdfParse)(buffer)
-    return data.text
+    const model = getGeminiModel('gemini-2.0-flash-exp')
+    
+    // Convert PDF buffer to base64
+    const base64Pdf = buffer.toString('base64')
+
+    // Use Gemini to extract text from PDF
+    const result = await model.generateContent([
+      {
+        inlineData: {
+          data: base64Pdf,
+          mimeType: 'application/pdf',
+        },
+      },
+      `Extract ALL text content from this PDF document. 
+      
+Instructions:
+- Extract every word, paragraph, heading, and caption
+- Maintain the structure and formatting as much as possible
+- Include headers, footers, and any annotations
+- Preserve lists, bullet points, and numbering
+- Include any text in tables or figures
+- Return ONLY the extracted text, no commentary or descriptions
+- If the PDF has multiple pages, extract text from all pages`,
+    ])
+
+    const response = await result.response
+    const extractedText = response.text()
+    
+    if (!extractedText || extractedText.trim().length === 0) {
+      throw new Error('No text could be extracted from PDF')
+    }
+    
+    return extractedText
   } catch (error) {
     console.error('PDF extraction error:', error)
-    throw new Error('Failed to extract text from PDF')
+    throw new Error(`Failed to extract text from PDF: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
 
@@ -37,7 +67,7 @@ export async function extractTextFromDOCX(buffer: Buffer): Promise<string> {
 export async function extractDataFromXLSX(buffer: Buffer): Promise<{
   sheets: Array<{
     name: string
-    data: any[]
+    data: unknown[]
     rowCount: number
     colCount: number
   }>
@@ -53,7 +83,7 @@ export async function extractDataFromXLSX(buffer: Buffer): Promise<{
         name: sheetName,
         data,
         rowCount: data.length,
-        colCount: data.length > 0 ? (data[0] as any[]).length : 0,
+        colCount: data.length > 0 ? (data[0] as unknown[]).length : 0,
       }
     })
 
@@ -61,7 +91,7 @@ export async function extractDataFromXLSX(buffer: Buffer): Promise<{
     const text = sheets
       .map((sheet) => {
         const sheetText = sheet.data
-          .map((row: any) => row.join(' '))
+          .map((row: unknown) => (Array.isArray(row) ? row.join(' ') : String(row)))
           .join('\n')
         return `Sheet: ${sheet.name}\n${sheetText}`
       })
@@ -204,10 +234,10 @@ export async function processDocument(
   fileType: string
 ): Promise<{
   text: string
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
 }> {
   let text = ''
-  let metadata: Record<string, any> = {}
+  let metadata: Record<string, unknown> = {}
 
   try {
     switch (fileType) {

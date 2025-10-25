@@ -11,7 +11,7 @@ export interface AnalysisResult {
     processingTime: number
     timestamp: string
   }
-  structuredData?: Record<string, any>
+  structuredData?: Record<string, unknown>
   confidence?: number
   sources?: Array<{
     text: string
@@ -109,7 +109,7 @@ export interface UsageStats {
 
 export interface CacheEntry {
   key: string
-  value: any
+  value: unknown
   timestamp: Date
   ttl: number
   hits: number
@@ -121,7 +121,7 @@ export class AIError extends Error {
     message: string,
     public code: string,
     public retryable: boolean = false,
-    public details?: any
+    public details?: unknown
   ) {
     super(message)
     this.name = 'AIError'
@@ -151,7 +151,7 @@ export class InvalidResponseError extends AIError {
 
 // Visualization Types
 export interface VisualizationRequest {
-  data: any
+  data: Record<string, unknown> | Array<{ label: string; value: unknown }>
   type: 'chart' | 'infographic' | 'diagram'
   chartType?: 'bar' | 'line' | 'pie' | 'scatter'
   style?: 'modern' | 'minimal' | 'detailed'

@@ -63,7 +63,7 @@ export function EntitiesDisplay({
   const queryClient = useQueryClient()
 
   // Fetch entities
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['document-entities', documentId],
     queryFn: async () => {
       const response = await fetch(`/api/ai/extract?documentId=${documentId}`)

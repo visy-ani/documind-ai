@@ -73,18 +73,19 @@ async function verifyDocumentAccess(documentId: string, userId: string) {
 export async function queryDocumentAction(
   documentId: string,
   query: string,
-  conversationId?: string
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _conversationId?: string
 ) {
   try {
     // Validate inputs
     const validatedDocId = documentIdSchema.parse(documentId)
-    const validatedQuery = querySchema.parse(query)
+    querySchema.parse(query)
 
     // Authenticate
     const user = await getAuthenticatedUser()
 
     // Verify access and get document
-    const document = await verifyDocumentAccess(validatedDocId, user.id)
+    await verifyDocumentAccess(validatedDocId, user.id)
 
     // Get conversation context
     const context = await conversationManager.getContext(validatedDocId, user.id)
