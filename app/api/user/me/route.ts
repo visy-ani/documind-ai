@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma/client'
 
 export async function GET() {
   try {
+    const supabase = await createClient()
     const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !authUser) {

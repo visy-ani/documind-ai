@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma/client'
 import {
   loginSchema,
@@ -28,6 +28,9 @@ export async function loginAction(
   try {
     // Validate input
     const validatedData = loginSchema.parse(data)
+
+    // Create server client
+    const supabase = await createClient()
 
     // Authenticate with Supabase
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
@@ -104,6 +107,9 @@ export async function signupAction(
       }
     }
 
+    // Create server client
+    const supabase = await createClient()
+
     // Create user in Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: validatedData.email,
@@ -177,6 +183,8 @@ export async function signupAction(
  */
 export async function signInWithGoogleAction(): Promise<ActionResponse<{ url: string }>> {
   try {
+    const supabase = await createClient()
+    
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -216,6 +224,8 @@ export async function signInWithGoogleAction(): Promise<ActionResponse<{ url: st
  */
 export async function signOutAction(): Promise<ActionResponse> {
   try {
+    const supabase = await createClient()
+    
     const { error } = await supabase.auth.signOut()
 
     if (error) {
@@ -246,6 +256,8 @@ export async function forgotPasswordAction(
     // Validate input
     const validatedData = forgotPasswordSchema.parse(data)
 
+    const supabase = await createClient()
+
     // Send reset email via Supabase
     const { error } = await supabase.auth.resetPasswordForEmail(validatedData.email, {
       redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
@@ -275,6 +287,8 @@ export async function forgotPasswordAction(
  */
 export async function getCurrentUser() {
   try {
+    const supabase = await createClient()
+    
     const { data: { user }, error } = await supabase.auth.getUser()
 
     if (error || !user) {

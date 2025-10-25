@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
 import { prisma } from '@/lib/prisma/client'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
 import { validateFile, getFileType } from '@/lib/validations/upload'
 import { processDocument } from '@/lib/file-processing'
 
@@ -10,6 +10,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 export async function POST(request: NextRequest) {
   try {
     // Get current user
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
